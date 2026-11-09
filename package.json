@@ -19,6 +19,7 @@
     "react-native-web": "^0.21.4"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16",
     "@types/react": "~19.3.0",
     "fast-check": "^4.10.2",
     "typescript": "~6.0.3",

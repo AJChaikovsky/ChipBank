@@ -74,6 +74,7 @@ create index game_players_user_idx on public.game_players (user_id);
 
 create table public.transactions (
   id              uuid primary key default gen_random_uuid(),
+  seq             bigint generated always as identity unique,  -- strict ledger order
   game_id         uuid not null references public.games (id) on delete cascade,
   game_player_id  uuid not null references public.game_players (id) on delete cascade,
   type            text not null check (type in ('buy_in', 'rebuy', 'cash_out', 'adjustment')),
@@ -176,7 +177,7 @@ declare last_t public.transactions;
 begin
   select * into last_t from public.transactions
   where game_player_id = p_player and voided_at is null and type <> 'adjustment'
-  order by created_at desc, id desc limit 1;
+  order by seq desc limit 1;
 
   if found and last_t.type = 'cash_out' then
     update public.game_players set status = 'cashed_out', left_at = last_t.created_at where id = p_player;
