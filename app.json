@@ -1,13 +1,14 @@
 {
   "expo": {
-    "name": "chipbank",
+    "name": "ChipBank",
     "slug": "chipbank",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.chipbank.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +20,16 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar"
+    ],
+    "scheme": "chipbank",
+    "experiments": {
+      "typedRoutes": true
     }
   }
 }
