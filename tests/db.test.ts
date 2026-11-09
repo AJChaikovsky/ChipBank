@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // Runs the real migration inside PGlite (embedded Postgres) with a minimal
 // stand-in for Supabase's auth schema and roles, then exercises the API as
 // different signed-in users — including RLS and permission checks.
@@ -163,7 +164,7 @@ describe('database', () => {
     await as(db, host, 'select public.finalize_game($1)', [game]);
 
     const nets = await as(db, bob, 'select game_player_id, net_cents from public.game_nets($1)', [game]);
-    const netMap = Object.fromEntries(nets.map((n: any) => [n.game_player_id, Number(n.net_cents)]));
+    const netMap: Record<string, number> = Object.fromEntries(nets.map((n: any) => [n.game_player_id, Number(n.net_cents)]));
     expect(netMap).toEqual({ [hostP]: 20000, [bobP]: -23000, [caraP]: 8000, [guestP]: -5000 });
 
     const s = await as(db, cara, 'select id, from_player_id, to_player_id, amount_cents from public.settlements where game_id = $1', [game]);
