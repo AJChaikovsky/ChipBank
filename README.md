@@ -35,6 +35,23 @@ ChipBank **never holds or moves money**. It's a ledger. Payment happens in Venmo
 | `npm run typecheck` | `tsc --noEmit` |
 | `npx expo export --platform web` | Static web build in `dist/` (deploy to Vercel, Netlify, or EAS Hosting) |
 
+## Deploy
+
+The project is linked to Expo as `@ajchaikovsky/chipbank`. The Supabase env vars are stored in EAS for the `production` and `preview` environments.
+
+**Web (EAS Hosting):**
+```bash
+npx expo export --platform web   # reads .env; re-run before every deploy
+npx eas-cli@latest deploy --prod # first run asks for a subdomain → https://<name>.expo.app
+```
+Afterwards, in Supabase → Authentication → URL Configuration, set **Site URL** to the deployed URL.
+
+**iOS (App Store):** needs a paid Apple Developer account ($99/yr).
+```bash
+npx eas-cli@latest build --platform ios --profile production --auto-submit
+```
+EAS creates the signing certificates, builds in the cloud, and uploads the build to App Store Connect. It appears in TestFlight in about 15 minutes. Submit it for review from App Store Connect.
+
 ## How a game works
 
 1. **Create a game.** Start from Games → New game, or from a crew to seat everyone at once. Set a default buy-in.

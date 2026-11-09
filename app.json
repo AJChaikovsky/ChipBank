@@ -7,8 +7,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.chipbank.app"
+      "supportsTablet": false,
+      "bundleIdentifier": "com.ajchaikovsky.chipbank",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -17,11 +20,14 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.ajchaikovsky.chipbank"
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "output": "single"
+      "output": "single",
+      "name": "ChipBank",
+      "description": "Track buy-ins, cash-outs, and who owes whom at your home poker game."
     },
     "plugins": [
       "expo-router",
@@ -30,6 +36,17 @@
     "scheme": "chipbank",
     "experiments": {
       "typedRoutes": true
+    },
+    "owner": "ajchaikovsky",
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "5b421dc7-cf0c-4acf-8af2-985bb9255ae3"
+      }
     }
   }
 }
