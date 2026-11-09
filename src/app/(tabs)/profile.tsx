@@ -1,8 +1,8 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Body, Button, Card, ErrorText, Field, H2, Money, Muted, Row, Screen } from '@/components/ui';
+import { Body, Button, Card, ErrorText, Field, H2, Money, Muted, Row, Screen, confirm, notify } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
-import { errorMessage, supabase } from '@/lib/supabase';
+import { errorMessage, rpc, supabase } from '@/lib/supabase';
 import type { PlayerResult } from '@/lib/types';
 
 export default function ProfileScreen() {
@@ -12,6 +12,7 @@ export default function ProfileScreen() {
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [results, setResults] = useState<PlayerResult[]>([]);
+  const [deleteErr, setDeleteErr] = useState<string | null>(null);
 
   useEffect(() => {
     setDisplayName(profile?.display_name ?? '');
@@ -35,6 +36,23 @@ export default function ProfileScreen() {
       await refreshProfile();
       setMsg('Saved');
     } catch (e) { setErr(errorMessage(e)); }
+  };
+
+  const deleteAccount = async () => {
+    setDeleteErr(null);
+    const sure = await confirm(
+      'Delete your account?',
+      `This permanently deletes @${profile?.username} and can't be undone.`,
+      'Delete',
+    );
+    if (!sure) return;
+    const reallySure = await confirm('Are you absolutely sure?', 'Your account will be gone for good.', 'Delete forever');
+    if (!reallySure) return;
+    try {
+      await rpc('delete_my_account');
+      await supabase.auth.signOut({ scope: 'local' });
+      notify('Account deleted', 'Thanks for playing.');
+    } catch (e) { setDeleteErr(errorMessage(e)); }
   };
 
   const nets = results.map(r => r.net_cents);
@@ -68,6 +86,16 @@ export default function ProfileScreen() {
       </Card>
 
       <Button title="Sign out" variant="secondary" onPress={async () => { await supabase.auth.signOut(); }} />
+
+      <H2 style={{ marginTop: 24 }}>Delete account</H2>
+      <Card>
+        <Muted>
+          Permanently deletes your profile, friends, and the crews you own. Games you played in stay in your
+          friends' history under your name as a guest, so their ledgers still add up. This can't be undone.
+        </Muted>
+        <ErrorText>{deleteErr}</ErrorText>
+        <Button title="Delete my account" variant="danger" onPress={deleteAccount} />
+      </Card>
     </Screen>
   );
 }

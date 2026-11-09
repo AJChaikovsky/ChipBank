@@ -276,4 +276,42 @@ describe('database', () => {
       },
     ), { numRuns: 25 });
   }, 120_000);
+  it('deletes an account but keeps game history intact for everyone else', async () => {
+    const dan = await signUp(db, 'dan', 'Dan');
+    const fred = await signUp(db, 'fred', 'Fred');
+    await befriend(db, dan, 'dan', fred, 'fred');
+
+    // dan hosts a game with fred; can't delete while it's open
+    const game = (await one(db, dan, `select public.create_game('Dan night', null, 0) as id`)).id;
+    const danP = (await one(db, dan, 'select id from public.game_players where game_id = $1', [game])).id;
+    const fredP = (await one(db, dan, 'select public.add_player($1, $2, null, 5000) as id', [game, fred])).id;
+    await as(db, dan, 'select public.record_buy_in($1, 5000)', [danP]);
+    await as(db, dan, 'select public.start_game($1)', [game]);
+    await expect(as(db, dan, 'select public.delete_my_account()')).rejects.toThrow(/still open/);
+
+    await as(db, dan, 'select public.cash_out($1, 8000)', [danP]);
+    await as(db, dan, 'select public.cash_out($1, 2000)', [fredP]);
+    await as(db, dan, 'select public.finalize_game($1)', [game]);
+    const crew = (await one(db, dan, `select public.create_group('Dan crew') as id`)).id;
+
+    // anonymous users can't call it
+    await expect(as(db, null, 'select public.delete_my_account()')).rejects.toThrow(/permission denied/);
+
+    await as(db, dan, 'select public.delete_my_account()');
+
+    expect(await as(db, fred, 'select * from public.profiles where id = $1', [dan])).toHaveLength(0);
+    expect(await as(db, fred, 'select * from public.friendships where requester_id = $1 or addressee_id = $1', [dan])).toHaveLength(0);
+    expect(await as(db, fred, 'select * from public.groups where id = $1', [crew])).toHaveLength(0);
+
+    // fred still sees the game, its ledger, and the settlement; dan is now a guest
+    const g = await one(db, fred, 'select host_id, status from public.games where id = $1', [game]);
+    expect(g).toMatchObject({ host_id: null, status: 'settled' });
+    const seat = await one(db, fred, 'select user_id, guest_name from public.game_players where id = $1', [danP]);
+    expect(seat).toMatchObject({ user_id: null, guest_name: 'Dan' });
+    const s = await as(db, fred, 'select from_player_id, to_player_id, amount_cents from public.settlements where game_id = $1', [game]);
+    expect(s.map((x: any) => [x.from_player_id, x.to_player_id, Number(x.amount_cents)])).toEqual([[fredP, danP, 3000]]);
+    // fred can still mark his payment as paid
+    const sid = (await one(db, fred, 'select id from public.settlements where game_id = $1', [game])).id;
+    await as(db, fred, 'select public.mark_settlement_paid($1)', [sid]);
+  });
 });

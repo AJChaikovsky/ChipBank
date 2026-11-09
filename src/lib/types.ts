@@ -15,7 +15,7 @@ export type GameStatus = 'lobby' | 'active' | 'settling' | 'settled';
 export type Game = {
   id: string;
   group_id: string | null;
-  host_id: string;
+  host_id: string | null;
   name: string;
   status: GameStatus;
   default_buy_in_cents: number;
