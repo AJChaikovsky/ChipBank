@@ -1,5 +1,7 @@
 # ChipBank
 
+**Live:** https://chipbank.expo.app
+
 Splitwise for home poker. Track buy-ins, rebuys, and cash-outs live across phones, then get the shortest list of who pays whom.
 
 ChipBank **never holds or moves money**. It's a ledger. Payment happens in Venmo, Cash App, or cash, and the app pre-fills the amount.
